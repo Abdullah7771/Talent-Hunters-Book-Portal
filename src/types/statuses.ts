@@ -4,3 +4,9 @@ export enum AccountStatus {
   ACTIVE = 'active',
   DISABLE = 'disable',
 }
+
+export enum BookStatus {
+  AVAILABLE = 'available',
+  NOT_AVAILABLE = 'notAvailable',
+  SOLDOUT = 'soldOut',
+}

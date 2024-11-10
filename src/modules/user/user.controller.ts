@@ -8,16 +8,37 @@ import {
   Param,
   Query,
   UseGuards,
+  Req,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { JwtUserGuard } from 'src/guards/jwt-user.guard';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { RolesGuard } from 'src/guards/role.guard';
+import { HasRoles } from 'src/guards/roles.decorator';
+import { ROLES } from 'src/types/roles';
+import { ExtendedRequest } from 'src/utils/extendedRequest.interface';
 // If you use JWT for authentication
 
+@ApiBearerAuth('jwt')
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @ApiOperation({ summary: 'Get User Profile' })
+  @UseGuards(JwtUserGuard, RolesGuard)
+  @HasRoles(ROLES.USER)
+  @Get('/me')
+  @UsePipes(ValidationPipe)
+  async getUserDetails(@Req() req: ExtendedRequest) {
+    const user = req?.user.toObject();
+    delete user.password;
+    return user;
+  }
 
   @Get('fetchall')
   @UseGuards(JwtUserGuard)
@@ -25,28 +46,31 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get('admin')
+  @Get('books')
   @UseGuards(JwtUserGuard)
-  async findAdmins() {
-    return this.userService.findAll(); // Modify to return admins
+  async fetchMyBooks(@Req() req: ExtendedRequest) {
+    return this.userService.fetchMyBooks(req?.user);
   }
 
-  @Get('user')
-  async findUsers() {
-    return this.userService.findAll(); // Modify to return users
+  @Get('requested-books')
+  @UseGuards(JwtUserGuard)
+  async myRequestedBooks(@Req() req: ExtendedRequest) {
+    return this.userService.fetchMyRequestedBooks(req?.user);
   }
 
-  @Get('name')
-  async findByName(@Query('name') name: string) {
-    return this.userService.findByName(name);
+  @Get('ordered-books')
+  @UseGuards(JwtUserGuard)
+  async myOrderedBooks(@Req() req: ExtendedRequest) {
+    return this.userService.fetchMyOrderedBooks(req?.user);
   }
 
-  @Get('familyname')
-  async findByFamilyName(@Query('familyname') familyName: string) {
-    return this.userService.findByFamilyName(familyName);
+  @Get('donated-books')
+  @UseGuards(JwtUserGuard)
+  async myDonatedBooks(@Req() req: ExtendedRequest) {
+    return this.userService.fetchMyDonatedBooks(req?.user);
   }
 
-  @Get(':id')
+  @Get('/by/:id')
   @UseGuards(JwtUserGuard)
   async findById(@Param('id') id: string) {
     return this.userService.findById(id);

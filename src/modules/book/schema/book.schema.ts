@@ -14,6 +14,9 @@ export class Book {
   @Prop({ type: String })
   status: string;
 
+  @Prop({ type: Number })
+  publishingYear: number;
+
   @Prop({ type: String })
   grade: string;
 
@@ -23,8 +26,8 @@ export class Book {
   @Prop({ type: String })
   author: string;
 
-  @Prop({ type: String })
-  image: string;
+  @Prop({ type: Array })
+  images: string[];
 
   @Prop({ type: Date })
   createdAt: Date;

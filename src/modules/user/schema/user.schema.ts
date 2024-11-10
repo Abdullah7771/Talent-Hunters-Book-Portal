@@ -33,7 +33,7 @@ export class User {
     enum: Object.values(ROLES),
     default: ROLES.USER,
   })
-  accountType: ROLES;
+  role: ROLES;
 
   @Prop({
     type: String,
@@ -45,11 +45,14 @@ export class User {
   @Prop([{ type: Types.ObjectId, ref: 'Book' }])
   books: Types.ObjectId[];
 
-  @Prop([{ type: Types.ObjectId, ref: 'Book' }])
+  @Prop([{ type: Types.ObjectId, ref: 'DonateBook' }])
   donatedBooks: Types.ObjectId[];
 
-  @Prop([{ type: Types.ObjectId, ref: 'Book' }])
-  requestBooks: Types.ObjectId[];
+  @Prop([{ type: Types.ObjectId, ref: 'RequestBook' }])
+  requestedBooks: Types.ObjectId[];
+
+  @Prop([{ type: Types.ObjectId, ref: 'OrderBook' }])
+  orderedBooks: Types.ObjectId[];
 
   @Prop({ type: Date })
   createdAt: Date;

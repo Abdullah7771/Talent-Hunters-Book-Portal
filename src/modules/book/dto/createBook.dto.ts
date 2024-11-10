@@ -68,7 +68,7 @@ export class CreateBookDto {
 
   @ApiProperty({
     description: 'Image URL of the book cover',
-    example: 'https://example.com/image.jpg',
+    example: ['https://example.com/image.jpg'],
     required: false,
   })
   @IsNotEmpty()

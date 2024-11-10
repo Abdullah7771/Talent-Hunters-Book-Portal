@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId, IsNotEmpty } from 'class-validator';
-
+import { Types } from 'mongoose';
 export class CreateOrderBookDto {
   @ApiProperty({
     description: 'Book ID that was ordered',
@@ -8,5 +8,5 @@ export class CreateOrderBookDto {
   })
   @IsMongoId()
   @IsNotEmpty()
-  bookId: string;
+  bookId: string | Types.ObjectId;
 }

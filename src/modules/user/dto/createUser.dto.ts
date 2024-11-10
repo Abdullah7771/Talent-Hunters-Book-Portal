@@ -67,42 +67,12 @@ export class CreateUserDto {
   @IsNotEmpty()
   phoneNumber: string;
 
-  @ApiProperty({
-    description: 'Account type of the user',
-    enum: ROLES,
-    example: ROLES.USER,
-  })
-  @IsEnum(ROLES)
-  @IsNotEmpty()
-  accountType: ROLES;
-
-  @ApiProperty({
-    description: 'Array of book IDs associated with the user',
-    type: [String],
-    example: ['60d2e9b16f8c3c001c9e4e76'],
-    required: false,
-  })
-  @IsArray()
-  @IsOptional()
-  books?: string[];
-
-  @ApiProperty({
-    description: 'Array of donated book IDs',
-    type: [String],
-    example: ['60d2e9b16f8c3c001c9e4e76'],
-    required: false,
-  })
-  @IsArray()
-  @IsOptional()
-  donatedBooks?: string[];
-
-  @ApiProperty({
-    description: 'Array of requested book IDs',
-    type: [String],
-    example: ['60d2e9b16f8c3c001c9e4e76'],
-    required: false,
-  })
-  @IsArray()
-  @IsOptional()
-  requestBooks?: string[];
+  // @ApiProperty({
+  //   description: 'Account type of the user',
+  //   enum: ROLES,
+  //   example: ROLES.USER,
+  // })
+  // @IsEnum(ROLES)
+  // @IsNotEmpty()
+  // accountType: ROLES;
 }

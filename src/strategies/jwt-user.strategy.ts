@@ -7,7 +7,7 @@ import { User } from 'src/modules/user/schema/user.schema';
 import { JWT } from 'src/types/jwt';
 
 @Injectable()
-export class JwtUserStrategy extends PassportStrategy(Strategy, 'jwt-user') {
+export class JwtUserStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     configService: ConfigService,
     private readonly usersService: UserService,

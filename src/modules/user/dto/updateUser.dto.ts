@@ -82,7 +82,7 @@ export class UpdateUserDto {
   })
   @IsEnum(ROLES)
   @IsOptional()
-  accountType?: ROLES;
+  role?: ROLES;
 
   @ApiProperty({
     description: 'Array of book IDs associated with the user',

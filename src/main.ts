@@ -13,10 +13,10 @@ async function bootstrap() {
     allowedHeaders: '*',
   });
   const config = new DocumentBuilder()
-    .setTitle('Prism Api Documentation')
-    .setDescription(
-      '<b> Mobile User </b>: Valid for only Mobile Users  \n <b> Admin </b>: Valid for only Admin ',
-    )
+    .setTitle('Talent Hunters Book Portal')
+    // .setDescription(
+    //   '<b> Mobile User </b>: Valid for only Mobile Users  \n <b> Admin </b>: Valid for only Admin ',
+    // )
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

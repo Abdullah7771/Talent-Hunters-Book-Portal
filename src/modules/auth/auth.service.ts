@@ -34,43 +34,50 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     try {
-      const existingUser = await this.userService.filterQuery({
-        email: createUserDto.email,
+      const existingUser = await this.userService.findUser({
+        filterQuery: {
+          email: createUserDto.email,
+        },
       });
+      if (existingUser) {
+        throw new HttpException(
+          'User with this email already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const hashedPassword = await hashPassword(createUserDto.password, 12);
       createUserDto.password = hashedPassword;
 
-      const otp = await this.otpGenerationWithExpiry(
-        createUserDto.email,
-        CodeType.ACCOUNT_VERIFICATION,
-      );
-      console.log(otp, 'otp');
-      const emailDto = new nodeMailerDto(
-        createUserDto.email,
-        CodeType.ACCOUNT_VERIFICATION,
-        otp.code,
-      );
+      // const otp = await this.otpGenerationWithExpiry(
+      //   createUserDto.email,
+      //   CodeType.ACCOUNT_VERIFICATION,
+      // );
+      // console.log(otp, 'otp');
+      // const emailDto = new nodeMailerDto(
+      //   createUserDto.email,
+      //   CodeType.ACCOUNT_VERIFICATION,
+      //   otp.code,
+      // );
 
-      this.mailService.sendEmailThroughNodeMailer(emailDto);
+      // this.mailService.sendEmailThroughNodeMailer(emailDto);
 
-      const createdUser = (await this.userService.create({
+      const createdUser = await this.userService.create({
         ...createUserDto,
-        accountType: ROLES.USER,
-      })) as UserDocument;
+      });
 
       console.log(createdUser, 'createdUser');
 
-      // const token = await this.jwtUserService.generateAuthToken({
-      //   email: createdUser.email,
-      //   id: createdUser._id,
-      //   role: createdUser.role,
-      // });
+      const token = await this.jwtUserService.generateAuthToken({
+        email: createdUser.email,
+        id: createdUser._id,
+        role: createdUser.role,
+      });
 
       delete createdUser.password;
-      delete createdUser.accountType;
+      delete createdUser.role;
 
       return {
-        // accessToken: token,
+        access_token: token,
         user: createdUser,
       };
     } catch (error) {
@@ -80,10 +87,16 @@ export class AuthService {
 
   async login(loginDto: LoginDTO) {
     try {
-      let existingUser = (await this.userService.filterQuery({
-        email: loginDto.email,
-        role: loginDto.role,
+      let existingUser = (await this.userService.findUser({
+        filterQuery: {
+          email: loginDto.email,
+          role: loginDto.email,
+        },
       })) as UserDocument;
+
+      if (!existingUser) {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      }
 
       const isPasswordValid = await comparePassword({
         inputPassword: loginDto.password,
@@ -101,16 +114,16 @@ export class AuthService {
           HttpStatus.FORBIDDEN,
         );
       }
-      if (existingUser.status == AccountStatus.PENDING) {
-        this.sendOtp(existingUser.email, CodeType.ACCOUNT_VERIFICATION);
-        return {
-          user: existingUser,
-        };
-      }
+      // if (existingUser.status == AccountStatus.PENDING) {
+      //   this.sendOtp(existingUser.email, CodeType.ACCOUNT_VERIFICATION);
+      //   return {
+      //     user: existingUser,
+      //   };
+      // }
       const token = await this.jwtUserService.generateAuthToken({
         email: existingUser.email,
         id: existingUser._id,
-        role: existingUser.accountType,
+        role: existingUser.role,
       });
 
       delete existingUser.password;
@@ -154,8 +167,12 @@ export class AuthService {
 
   async sendOtp(email: string, type: CodeType) {
     try {
-      const user = await this.userService.filterQuery({ email: email });
-      if (user.accountType !== ROLES.USER) {
+      const user = await this.userService.findUser({
+        filterQuery: {
+          email,
+        },
+      });
+      if (user.role !== ROLES.USER) {
         throw new HttpException('Invalid Email', HttpStatus.BAD_REQUEST);
       }
       if (
@@ -183,10 +200,12 @@ export class AuthService {
 
   async resendOtp(email: string, type: CodeType) {
     try {
-      const user = await this.userService.filterQuery({
-        email,
+      const user = await this.userService.findUser({
+        filterQuery: {
+          email,
+        },
       });
-      if (user.accountType !== ROLES.USER) {
+      if (user.role !== ROLES.USER) {
         throw new HttpException('Invalid Email', HttpStatus.BAD_REQUEST);
       }
 
@@ -264,8 +283,10 @@ export class AuthService {
 
   async verifyOtp({ email, OTP, type }: VerifyOtpDTO) {
     try {
-      let user = await this.userService.filterQuery({
-        email,
+      let user = await this.userService.findUser({
+        filterQuery: {
+          email,
+        },
       });
 
       if (
@@ -290,7 +311,7 @@ export class AuthService {
       const token = await this.jwtUserService.generateAuthToken({
         email: user.email,
         id: user._id,
-        role: user.accountType,
+        role: user.role,
       });
       return {
         user,

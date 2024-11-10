@@ -10,90 +10,86 @@ import {
 export abstract class EntityRepository<T extends Document> {
   constructor(private readonly entityModel: Model<T>) {}
 
-  async findOne(
-    filterQuery: FilterQuery<T>,
-    projection?: Record<string, unknown>,
-  ): Promise<T | null> {
-    try {
-      const entity = await this.entityModel
-        .findOne(filterQuery, {
-          _v: 0,
-          ...projection,
-        })
-        .exec();
-
-      if (!entity) {
-        throw new HttpException(
-          `${this.entityModel.modelName} Not Found`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return entity;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async findOneWithPopulate(
-    filterQuery: FilterQuery<T>,
-    projection?: Record<string, unknown>,
-    populateOptions?: PopulateOptions | (string | PopulateOptions)[],
-    sort?: Record<string, 1 | -1 | 'desc' | 'asc'>,
-  ): Promise<T | null> {
+  async findOne({
+    filterQuery,
+    projection,
+    populateOptions,
+    checkExistingOne = true,
+  }: {
+    filterQuery: FilterQuery<T>;
+    projection?: Record<string, unknown>;
+    populateOptions?: PopulateOptions | (string | PopulateOptions)[];
+    checkExistingOne?: boolean;
+  }): Promise<T | null> {
     try {
       let query = this.entityModel.findOne(filterQuery, {
         __v: 0,
         ...projection,
       });
-      console.log(populateOptions, 'options');
 
       if (populateOptions) {
         query = query.populate(populateOptions);
       }
-      if (sort) {
-        query = query.sort(sort);
-      }
-
       const entity = await query.exec();
-
-      if (!entity) {
-        throw new HttpException(
-          `${this.entityModel.modelName} Not Found`,
-          HttpStatus.NOT_FOUND,
-        );
+      if (checkExistingOne) {
+        if (!entity) {
+          throw new HttpException(
+            `${this.entityModel.modelName} Not Found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
       }
+
       return entity;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async findWithPopulate(
-    filterQuery: FilterQuery<T>,
-    projection?: Record<string, unknown>,
-    populateOptions?: PopulateOptions | (string | PopulateOptions)[],
-    sort?: Record<string, 1 | -1>,
-  ): Promise<T[] | null> {
+  async find({
+    filterQuery,
+    projection,
+    populateOptions,
+    checkExistingOne = true,
+    sort,
+    limit,
+    offset,
+  }: {
+    filterQuery: FilterQuery<T>;
+    projection?: Record<string, unknown>;
+    populateOptions?: PopulateOptions | (string | PopulateOptions)[];
+    sort?: Record<string, 1 | -1>;
+    checkExistingOne?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<T[] | null> {
     try {
       let query = this.entityModel.find(filterQuery, {
-        _v: 0,
+        __v: 0,
         ...projection,
       });
-
       if (populateOptions) {
         query = query.populate(populateOptions);
       }
       if (sort) {
         query = query.sort(sort);
       }
+      if (limit) {
+        query = query.limit(limit);
+      }
+      if (offset) {
+        query = query.skip(offset);
+      }
 
       const entity = await query.exec();
 
-      if (!entity) {
-        throw new HttpException(
-          `${this.entityModel.modelName} Not Found`,
-          HttpStatus.NOT_FOUND,
-        );
+      if (checkExistingOne) {
+        if (!entity) {
+          throw new HttpException(
+            `${this.entityModel.modelName} Not Found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
       }
       return entity;
     } catch (error) {
@@ -101,53 +97,15 @@ export abstract class EntityRepository<T extends Document> {
     }
   }
 
-  async checkExistingOne(
-    filterQuery: FilterQuery<T>,
-    projection?: Record<string, unknown>,
-  ): Promise<T | null> {
+  async findById(id: string | any, populateOptions?: PopulateOptions) {
     try {
-      const entity = await this.entityModel
-        .findOne(filterQuery, { _v: 0, ...projection })
-        .exec();
-
-      if (entity) {
-        throw new HttpException(
-          `${this.entityModel.modelName} Already Exists`,
-          HttpStatus.NOT_FOUND,
-        );
+      let query = this.entityModel.findById(id, {
+        __v: 0,
+      });
+      if (populateOptions) {
+        query = query.populate(populateOptions);
       }
-      return;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async find(
-    filterQuery: FilterQuery<T>,
-    projection?: Record<string, unknown>,
-    sort?: Record<string, 1 | -1>,
-  ): Promise<T[] | null> {
-    try {
-      const entity = await this.entityModel
-        .find(filterQuery, { _v: 0, ...projection })
-        .sort(sort)
-        .exec();
-
-      if (!entity) {
-        throw new HttpException(
-          `${this.entityModel.modelName} Not Found`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return entity;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  async findById(id: string | any) {
-    try {
-      const entity = await this.entityModel.findById(id).exec();
+      const entity = await query.exec();
 
       if (!entity) {
         throw new HttpException(
@@ -222,6 +180,15 @@ export abstract class EntityRepository<T extends Document> {
       }
 
       return deleteResult;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async countDocuments(filterQuery: FilterQuery<T>) {
+    try {
+      const count = await this.entityModel.countDocuments(filterQuery);
+      return count;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

@@ -3,6 +3,7 @@ import { RequestBookController } from './request-book.controller';
 import { RequestBookService } from './request-book.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RequestBook, RequestBookSchema } from './schema/requested-book.schema';
+import { RequestBookRepository } from './request-book.repository';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { RequestBook, RequestBookSchema } from './schema/requested-book.schema';
     ]),
   ],
   controllers: [RequestBookController],
-  providers: [RequestBookService],
+  providers: [RequestBookService, RequestBookRepository],
+  exports: [RequestBookService],
 })
 export class RequestBookModule {}

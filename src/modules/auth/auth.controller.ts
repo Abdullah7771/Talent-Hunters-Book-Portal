@@ -44,18 +44,6 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.CREATED,
   })
-  @ApiBody({
-    type: RegisterDTO,
-    schema: {
-      example: {
-        email: 'johndoe@test.com',
-
-        password: 'password',
-        role: 'mobileUser',
-        confirPassword: 'password',
-      },
-    },
-  })
   @Post('register')
   @UsePipes(ValidationPipe)
   @HttpCode(HttpStatus.CREATED)
@@ -115,6 +103,7 @@ export class AuthController {
   // @ApiBearerAuth('jwt')
   // @UseGuards(JwtUserGuard, RolesGuard)
   // @HasRoles(ROLES.USER)
+  @ApiExcludeEndpoint()
   @ApiOperation({ summary: 'Resend OTP to the email' })
   @ApiBody({
     type: String,
@@ -137,6 +126,8 @@ export class AuthController {
   // @ApiBearerAuth('jwt')
   // @UseGuards(JwtUserGuard, RolesGuard)
   // @HasRoles(ROLES.USER)
+
+  @ApiExcludeEndpoint()
   @ApiOperation({ summary: 'Verify OTP sent to the email' })
   @ApiBody({
     type: VerifyOtpDTO,
@@ -154,6 +145,8 @@ export class AuthController {
   }
 
   // send forgot password otp to email
+
+  @ApiExcludeEndpoint()
   @ApiOperation({ summary: 'Sent OTP to the email' })
   @ApiBody({
     type: String,
@@ -170,6 +163,8 @@ export class AuthController {
   }
 
   // resend forgot password otp to email
+
+  @ApiExcludeEndpoint()
   @ApiOperation({ summary: 'Resent OTP to the email' })
   @ApiBody({
     type: String,
@@ -186,6 +181,8 @@ export class AuthController {
   }
 
   // reset   password
+
+  @ApiExcludeEndpoint()
   @ApiBearerAuth('jwt')
   @UseGuards(JwtUserGuard, RolesGuard)
   @HasRoles(ROLES.USER)
